@@ -1,197 +1,104 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Planner Insano 12h - Treino de IA</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planner Insano 12h - Treino de IA (Full-Stack)</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#0f1115;color:#e8eaf0}
-header{padding:18px 18px 10px;max-width:1300px;margin:0 auto}
-h1{margin:0;font-size:26px} p.sub{color:#aab0bd;margin:6px 0 0}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:#0f1115;color:#e8eaf0}
+header{padding:18px;max-width:1300px;margin:0 auto} h1{margin:0;font-size:26px} p.sub{color:#aab0bd}
 .top{display:flex;gap:12px;flex-wrap:wrap;max-width:1300px;margin:14px auto;padding:0 18px}
 .card{background:#1a1e27;border:1px solid #2a2f3a;border-radius:14px;padding:14px;flex:1;min-width:200px}
-.card b{font-size:13px;color:#aab0bd;text-transform:uppercase;letter-spacing:.06em}
-.card .big{font-size:26px;font-weight:800;margin-top:6px}
-.card small{color:#aab0bd}
-.controls{max-width:1300px;margin:0 auto;padding:0 18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.card b{font-size:13px;color:#aab0bd;text-transform:uppercase} .card .big{font-size:26px;font-weight:800;margin-top:6px}
+.controls{max-width:1300px;margin:0 auto;padding:0 18px;display:flex;gap:10px;flex-wrap:wrap}
 button{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:#6c5ce7;color:white}
-button.ghost{background:#262b36;color:#e8eaf0;border:1px solid #3a4150}
-button.green{background:#00b894} button.orange{background:#e17055} button.red{background:#d63031}
+button.ghost{background:#262b36;color:#e8eaf0;border:1px solid #3a4150} button.green{background:#00b894} button.orange{background:#e17055} button.red{background:#d63031}
 input,select,textarea{background:#12151c;border:1px solid #2a2f3a;color:#e8eaf0;border-radius:10px;padding:10px;width:100%}
-.week{display:flex;gap:8px;flex-wrap:wrap;max-width:1300px;margin:14px auto;padding:0 18px}
-.week button{flex:1;min-width:90px} .week button.active{background:#00b894}
+.week{display:flex;gap:8px;flex-wrap:wrap;max-width:1300px;margin:14px auto;padding:0 18px} .week button{flex:1;min-width:90px} .week button.active{background:#00b894}
 .timer{max-width:1300px;margin:10px auto;padding:0 18px;background:#1a1e27;border:1px solid #2a2f3a;border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
 .timer .time{font-size:36px;font-weight:900}
 .board{max-width:1300px;margin:14px auto;padding:0 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-@media(max-width:900px){.board{grid-template-columns:1fr 1fr} .timer{flex-direction:column;align-items:flex-start}}
-@media(max-width:560px){.board{grid-template-columns:1fr}}
+@media(max-width:900px){.board{grid-template-columns:1fr 1fr}} @media(max-width:560px){.board{grid-template-columns:1fr}}
 .col{background:#161a22;border:1px solid #2a2f3a;border-radius:14px;padding:12px;min-height:420px}
-.col h3{margin:0 0 8px;display:flex;justify-content:space-between;align-items:center}
-.col h3 span{font-size:12px;background:#262b36;padding:4px 8px;border-radius:999px}
 .task{background:#222736;border:1px solid #333a48;border-radius:12px;padding:12px;margin-bottom:10px;cursor:grab}
-.task:active{cursor:grabbing}
 .task .meta{font-size:12px;color:#aab0bd} .task .title{font-weight:800;margin:4px 0}
-.task .row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.task .row button{padding:7px 10px;font-size:12px}
+.task .row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap} .task .row button{padding:7px 10px;font-size:12px}
 .pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800}
 .Outlier{background:#6c5ce7} .Appen{background:#0984e3} .TELUS{background:#00b894} .Neevo{background:#e17055} .DataAnnotation{background:#e84393} .Outros{background:#636e72}
 .progress{height:10px;background:#262b36;border-radius:999px;overflow:hidden} .progress>div{height:100%;background:#00b894;width:0%}
 .progress2{height:10px;background:#262b36;border-radius:999px;overflow:hidden;margin-top:6px} .progress2>div{height:100%;background:#fdcb6e;width:0%}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:16px;z-index:99}
-.modal.open{display:flex} .modal>div{background:#1a1e27;border-radius:16px;padding:18px;width:100%;max-width:520px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:16px;z-index:99} .modal.open{display:flex} .modal>div{background:#1a1e27;border-radius:16px;padding:18px;width:100%;max-width:520px}
 label{font-size:13px;color:#aab0bd;display:block;margin:10px 0 4px}
-.sunday{max-width:1300px;margin:14px auto;padding:0 18px;display:none}
-.sunday.show{display:block} .sunday>div{background:#1a1e27;border:1px solid #2a2f3a;border-radius:16px;padding:28px;text-align:center}
-a{color:#a29bfe}
+.sunday{max-width:1300px;margin:14px auto;padding:0 18px;display:none} .sunday.show{display:block} .sunday>div{background:#1a1e27;border:1px solid #2a2f3a;border-radius:16px;padding:28px;text-align:center}
+.status{max-width:1300px;margin:8px auto;padding:0 18px;font-size:13px;color:#fdcb6e}
 </style>
 </head>
 <body>
-<header>
-<h1>Planner Insano 12h — Treino de IA</h1>
-<p class="sub">12 blocos de 55 min + 5 min pausa = 11h de trabalho + 55 min pausa. Sem vídeo. Mínimo: $8/h. Domingo = folga.</p>
-</header>
-
+<header><h1>Planner Insano 12h — Treino de IA</h1><p class="sub">Full-stack: Vercel (front) + Supabase (banco) + GitHub (código). 12 blocos de 55 min + 5 min. Domingo = folga. Mínimo $8/h.</p></header>
+<div id="status" class="status">Conectando ao Supabase... Se ficar aqui, confira as chaves no Vercel.</div>
 <div class="top">
-<div class="card"><b>Horas pagas hoje</b><div class="big" id="hPagas">0h</div><small>Cards em Concluído (exceto Caça-projetos)</small></div>
-<div class="card"><b>Horas em espera hoje</b><div class="big" id="hEspera">0h</div><small>Fila vazia / esperando tarefa</small></div>
+<div class="card"><b>Horas pagas hoje</b><div class="big" id="hPagas">0h</div><small>Concluído (exceto Caça-projetos)</small></div>
+<div class="card"><b>Horas em espera hoje</b><div class="big" id="hEspera">0h</div><small>Fila vazia</small></div>
 <div class="card"><b>$ Ganhos hoje</b><div class="big" id="gHoje">$0</div><small id="gHojeBRL">R$ 0</small></div>
 <div class="card"><b>Semana (6 dias)</b><div class="big" id="gSemana">$0</div><small id="gSemanaBRL">R$ 0</small></div>
 <div class="card"><b>Mês (26 dias)</b><div class="big" id="gMes">$0</div><small id="gMesBRL">R$ 0</small></div>
 </div>
-
 <div class="controls">
-<label style="margin:0">$/h mínimo <input id="rate" type="number" value="8" step="0.5" style="width:90px"></label>
+<label style="margin:0">$/h <input id="rate" type="number" value="8" step="0.5" style="width:90px"></label>
 <label style="margin:0">Câmbio R$ <input id="fx" type="number" value="5.93" step="0.01" style="width:90px"></label>
-<button class="ghost" onclick="resetDay()">Resetar dia</button>
-<button class="ghost" onclick="addTaskPrompt()">+ Adicionar bloco</button>
-<button class="ghost" onclick="addWaitCard()">+ Fila vazia</button>
-<button class="red" onclick="clearDone()">Limpar concluídos</button>
+<button class="ghost" onclick="resetDay()">Resetar dia</button><button class="ghost" onclick="addTaskPrompt()">+ Adicionar bloco</button><button class="ghost" onclick="addWaitCard()">+ Fila vazia</button><button class="red" onclick="clearDone()">Limpar concluídos</button>
 </div>
-
-<div style="max-width:1300px;margin:12px auto;padding:0 18px">
-<div style="display:flex;justify-content:space-between;font-size:13px"><span>Progresso pago: <b id="pctPago">0%</b></span><span>Espera: <b id="pctEspera">0%</b></span></div>
-<div class="progress"><div id="barPago"></div></div>
-<div class="progress2"><div id="barEspera"></div></div>
-<div id="aviso" style="margin-top:8px;color:#fdcb6e;font-size:13px"></div>
-</div>
-
+<div style="max-width:1300px;margin:12px auto;padding:0 18px"><div style="display:flex;justify-content:space-between;font-size:13px"><span>Pago: <b id="pctPago">0%</b></span><span>Espera: <b id="pctEspera">0%</b></span></div><div class="progress"><div id="barPago"></div></div><div class="progress2"><div id="barEspera"></div></div><div id="aviso" style="margin-top:8px;color:#fdcb6e;font-size:13px"></div></div>
 <div class="week" id="week"></div>
-
-<div class="timer">
-<div><b id="timerLabel">Timer — 55 min trabalho</b><div class="time" id="timer">55:00</div><small>Depois: 5 min pausa. Levante, água, olho longe da tela.</small></div>
-<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="green" onclick="startTimer(55,'Trabalho')">Iniciar 55 min</button><button class="orange" onclick="startTimer(5,'Pausa')">Pausa 5 min</button><button class="ghost" onclick="stopTimer()">Parar</button><button class="ghost" onclick="resetTimer()">Reset</button></div>
-</div>
-
-<div class="sunday" id="sundayBox"><div><h2 style="margin:0">😴 Domingo — Folga total</h2><p>Hoje é para recarregar. Sem timer, sem ganho. Na semana que vem você volta com a fila cheia.</p><p style="color:#aab0bd">Dica: use o domingo para revisar qual plataforma mais pagou na semana e qual mais ficou em espera.</p></div></div>
-
+<div class="timer"><div><b id="timerLabel">Timer — 55 min trabalho</b><div class="time" id="timer">55:00</div><small>Depois: 5 min pausa.</small></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="green" onclick="startTimer(55,'Trabalho')">Iniciar 55 min</button><button class="orange" onclick="startTimer(5,'Pausa')">Pausa 5 min</button><button class="ghost" onclick="stopTimer()">Parar</button><button class="ghost" onclick="resetTimer()">Reset</button></div></div>
+<div class="sunday" id="sundayBox"><div><h2 style="margin:0">😴 Domingo — Folga total</h2><p>Hoje é para recarregar. Sem timer, sem ganho.</p></div></div>
 <div class="board" id="board"></div>
-
 <div style="max-width:1300px;margin:0 auto;padding:0 18px 30px;color:#aab0bd;font-size:13px;text-align:center">
 <b style="font-size:16px;letter-spacing:1px">Brafaels BRS</b><br><br>
 <a href="https://wa.me/5521990888213?text=Oi%2C%20gostei%2C%20vim%20atrav%C3%A9s%20do%20seu%20planner%2C%20gostei%20muito.%20Quero%20saber%20mais%20informa%C3%A7%C3%B5es." target="_blank" style="color:#a29bfe;font-weight:700;text-decoration:none">Fale comigo no WhatsApp</a>
 </div>
-
-<div class="modal" id="modal"><div>
-<h3 style="margin:0" id="modalTitle">Editar bloco</h3>
-<label>Título</label><input id="fTitle">
-<label>Plataforma</label><select id="fPlat"><option>Outlier</option><option>Appen</option><option>TELUS</option><option>Neevo</option><option>DataAnnotation</option><option>Outros</option></select>
-<label>Horário (ex: 08:00-08:55)</label><input id="fTime">
-<label>Notas</label><textarea id="fNotes" rows="3"></textarea>
-<label>Tempo em espera / fila vazia (min)</label><input id="fWait" type="number" value="0">
-<label>É pago? (Caça-projetos = Não)</label><select id="fPaid"><option value="1">Sim, pago</option><option value="0">Não, só espera / não-pago</option></select>
-<div style="display:flex;gap:8px;margin-top:14px"><button onclick="saveModal()">Salvar</button><button class="ghost" onclick="closeModal()">Cancelar</button><button class="red" onclick="deleteModal()">Excluir</button></div>
-</div></div>
-
+<div class="modal" id="modal"><div><h3 style="margin:0">Editar bloco</h3><label>Título</label><input id="fTitle"><label>Plataforma</label><select id="fPlat"><option>Outlier</option><option>Appen</option><option>TELUS</option><option>Neevo</option><option>DataAnnotation</option><option>Outros</option></select><label>Horário</label><input id="fTime"><label>Notas</label><textarea id="fNotes" rows="3"></textarea><label>Espera (min)</label><input id="fWait" type="number" value="0"><label>É pago?</label><select id="fPaid"><option value="1">Sim</option><option value="0">Não</option></select><div style="display:flex;gap:8px;margin-top:14px"><button onclick="saveModal()">Salvar</button><button class="ghost" onclick="closeModal()">Cancelar</button><button class="red" onclick="deleteModal()">Excluir</button></div></div></div>
 <script>
+// CONFIG - a outra IA deve trocar pelos valores do seu Supabase via variáveis do Vercel ou aqui:
+const SUPABASE_URL = window.__ENV__?.SUPABASE_URL || "COLE_AQUI_SUA_SUPABASE_URL";
+const SUPABASE_ANON_KEY = window.__ENV__?.SUPABASE_ANON_KEY || "COLE_AQUI_SUA_ANON_KEY";
+let supabaseClient = null;
+try{ if(SUPABASE_URL.startsWith("http")) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
 const DAYS=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
 let state = JSON.parse(localStorage.getItem('planner12h_v2')||'null');
 const DEFAULT_TASKS=[
-{t:'Outlier — Avaliação de respostas PT-BR',p:'Outlier',time:'08:00-08:55',notes:'Foco máximo. Bloco que mais paga.',wait:0,paid:1},
-{t:'Appen / CrowdGen — Rotulagem e avaliação de busca',p:'Appen',time:'09:00-09:55',notes:'Tarefa leve, intercala com pesada.',wait:0,paid:1},
+{t:'Outlier — Avaliação de respostas PT-BR',p:'Outlier',time:'08:00-08:55',notes:'Foco máximo.',wait:0,paid:1},
+{t:'Appen / CrowdGen — Rotulagem e avaliação de busca',p:'Appen',time:'09:00-09:55',notes:'Tarefa leve.',wait:0,paid:1},
 {t:'TELUS Digital — Avaliação busca / anúncios / mapas',p:'TELUS',time:'10:00-10:55',notes:'',wait:0,paid:1},
-{t:'Neevo — Voz: gravar frases / transcrever',p:'Neevo',time:'11:00-11:55',notes:'Microfone do celular já resolve.',wait:0,paid:1},
+{t:'Neevo — Voz: gravar frases / transcrever',p:'Neevo',time:'11:00-11:55',notes:'',wait:0,paid:1},
 {t:'Outlier — Escrever / corrigir prompts',p:'Outlier',time:'12:00-12:55',notes:'',wait:0,paid:1},
-{t:'DataAnnotation / Alignerr — Revisão',p:'DataAnnotation',time:'13:00-13:55',notes:'Se não liberado, volta para Appen.',wait:0,paid:1},
+{t:'DataAnnotation / Alignerr — Revisão',p:'DataAnnotation',time:'13:00-13:55',notes:'Se não liberado, Appen.',wait:0,paid:1},
 {t:'TELUS — Segunda leva, tarefas leves',p:'TELUS',time:'14:00-14:55',notes:'',wait:0,paid:1},
 {t:'Appen — Transcrição e anotação',p:'Appen',time:'15:00-15:55',notes:'',wait:0,paid:1},
 {t:'Outlier — Avaliação especialista / fact-checking',p:'Outlier',time:'16:00-16:55',notes:'',wait:0,paid:1},
 {t:'Neevo / OneForma — Voz + microtarefas',p:'Neevo',time:'17:00-17:55',notes:'',wait:0,paid:1},
-{t:'Caça-projetos — Aplicar, qualificação, checar fila',p:'Outros',time:'18:00-18:55',notes:'Não-pago, mas garante tarefa amanhã.',wait:0,paid:0},
+{t:'Caça-projetos — Aplicar, qualificação, checar fila',p:'Outros',time:'18:00-18:55',notes:'Não-pago, garante tarefa amanhã.',wait:0,paid:0},
 {t:'Repescagem — Voltar onde sobrou tarefa',p:'Outros',time:'19:00-19:55',notes:'',wait:0,paid:1},
 ];
-if(!state){
-  state={day:'Segunda',rate:8,fx:5.93,boards:{}};
-  DAYS.slice(0,6).forEach(d=>{ state.boards[d]={todo:DEFAULT_TASKS.map((x,i)=>({...x,id:d+'-'+i})),doing:[],pause:[],done:[]}; });
-  state.boards['Domingo']={todo:[],doing:[],pause:[],done:[]};
-}
+if(!state){ state={day:'Segunda',rate:8,fx:5.93,boards:{}}; DAYS.slice(0,6).forEach(d=>{ state.boards[d]={todo:DEFAULT_TASKS.map((x,i)=>({...x,id:d+'-'+i})),doing:[],pause:[],done:[]}; }); state.boards['Domingo']={todo:[],doing:[],pause:[],done:[]}; }
+async function syncToSupabase(){ if(!supabaseClient) return; try{ const {error} = await supabaseClient.from('kanban_settings').upsert({id:'main', value: state}); if(!error) document.getElementById('status').textContent='✅ Salvo no Supabase — abre em qualquer celular e continua de onde parou.'; }catch(e){} }
+async function loadFromSupabase(){ if(!supabaseClient) return; try{ const {data} = await supabaseClient.from('kanban_settings').select('*').eq('id','main').single(); if(data && data.value){ state=data.value; render(); document.getElementById('status').textContent='✅ Carregado do Supabase.'; } }catch(e){} }
 let currentEdit=null, timerInt=null, timerSec=55*60;
-function save(){ localStorage.setItem('planner12h_v2',JSON.stringify(state)); render(); }
+function save(){ localStorage.setItem('planner12h_v2',JSON.stringify(state)); render(); syncToSupabase(); }
 function board(){ return state.boards[state.day]; }
-function renderWeek(){
-  const w=document.getElementById('week'); w.innerHTML='';
-  DAYS.forEach(d=>{
-    const b=document.createElement('button'); b.textContent=d + (d==='Domingo'?' • Folga':'');
-    if(d===state.day) b.classList.add('active');
-    b.onclick=()=>{state.day=d; save();}; w.appendChild(b);
-  });
-  document.getElementById('sundayBox').classList.toggle('show', state.day==='Domingo');
-  document.getElementById('board').style.display = state.day==='Domingo' ? 'none' : 'grid';
-}
-function render(){
-  renderWeek();
-  document.getElementById('rate').value=state.rate; document.getElementById('fx').value=state.fx;
-  const b=board(); const cols=[['todo','A Fazer Hoje'],['doing','Fazendo Agora'],['pause','Pausa 5min'],['done','Concluído']];
-  const boardEl=document.getElementById('board'); boardEl.innerHTML='';
-  cols.forEach(([key,label])=>{
-    const col=document.createElement('div'); col.className='col'; col.dataset.col=key;
-    col.innerHTML=`<h3>${label} <span>${b[key].length}</span></h3>`;
-    col.ondragover=e=>e.preventDefault();
-    col.ondrop=e=>{ const id=e.dataTransfer.getData('text/plain'); moveCard(id,key); };
-    b[key].forEach(task=>{
-      const el=document.createElement('div'); el.className='task'; el.draggable=true;
-      el.ondragstart=e=>e.dataTransfer.setData('text/plain',task.id);
-      el.innerHTML=`<div class="meta">${task.time} • <span class="pill ${task.p==='TELUS'?'TELUS':task.p}">${task.p}</span> ${task.paid? '' : '• NÃO-PAGO'}</div><div class="title">${task.t}</div><div class="meta">${task.notes||''}</div><div class="meta">Espera: ${task.wait||0} min</div><div class="row"><button class="ghost" onclick="openModal('${task.id}')">Editar</button><button class="ghost" onclick="addWait('${task.id}',15)">+15min espera</button><button class="ghost" onclick="addWait('${task.id}',30)">+30min espera</button><button class="red" onclick="deleteTask('${task.id}')">Excluir</button></div>`;
-      col.appendChild(el);
-    });
-    boardEl.appendChild(col);
-  });
-  // cálculos
-  const donePaid = b.done.filter(x=>x.paid).length;
-  const hPagas = donePaid * 55/60;
-  const waitMin = [...b.todo,...b.doing,...b.pause,...b.done].reduce((s,x)=>s+(+x.wait||0),0);
-  const hEspera = waitMin/60;
-  const gHoje = hPagas * state.rate;
-  document.getElementById('hPagas').textContent = hPagas.toFixed(1)+'h';
-  document.getElementById('hEspera').textContent = hEspera.toFixed(1)+'h';
-  document.getElementById('gHoje').textContent = '$'+gHoje.toFixed(0);
-  document.getElementById('gHojeBRL').textContent = 'R$ '+(gHoje*state.fx).toFixed(0);
-  document.getElementById('gSemana').textContent = '$'+(gHoje*6).toFixed(0);
-  document.getElementById('gSemanaBRL').textContent = 'R$ '+(gHoje*6*state.fx).toFixed(0);
-  document.getElementById('gMes').textContent = '$'+(gHoje*26).toFixed(0);
-  document.getElementById('gMesBRL').textContent = 'R$ '+(gHoje*26*state.fx).toFixed(0);
-  const total = b.todo.length+b.doing.length+b.pause.length+b.done.length || 1;
-  const pctPago = Math.round(b.done.length/total*100);
-  const pctEspera = Math.min(100, Math.round(waitMin/(11*60)*100));
-  document.getElementById('pctPago').textContent=pctPago+'%'; document.getElementById('pctEspera').textContent=pctEspera+'%';
-  document.getElementById('barPago').style.width=pctPago+'%'; document.getElementById('barEspera').style.width=pctEspera+'%';
-  document.getElementById('aviso').textContent = waitMin>=120 ? '⚠️ Fila esvaziou hoje — amanhã foca no bloco Caça-projetos para encher a fila.' : waitMin>=60 ? 'Fila em espera moderada — checa novos projetos no próximo bloco.' : '';
-  updateTimerLabel();
-}
-function moveCard(id,toCol){
-  const b=board(); let found=null, from=null;
-  ['todo','doing','pause','done'].forEach(k=>{ const idx=b[k].findIndex(x=>x.id===id); if(idx>-1){ found=b[k].splice(idx,1)[0]; from=k; } });
-  if(found){ b[toCol].push(found); save(); }
-}
+function renderWeek(){ const w=document.getElementById('week'); w.innerHTML=''; DAYS.forEach(d=>{ const b=document.createElement('button'); b.textContent=d+(d==='Domingo'?' • Folga':''); if(d===state.day) b.classList.add('active'); b.onclick=()=>{state.day=d; save();}; w.appendChild(b); }); document.getElementById('sundayBox').classList.toggle('show', state.day==='Domingo'); document.getElementById('board').style.display = state.day==='Domingo' ? 'none':'grid'; }
+function render(){ renderWeek(); document.getElementById('rate').value=state.rate; document.getElementById('fx').value=state.fx; const b=board(); const cols=[['todo','A Fazer Hoje'],['doing','Fazendo Agora'],['pause','Pausa 5min'],['done','Concluído']]; const boardEl=document.getElementById('board'); boardEl.innerHTML=''; cols.forEach(([key,label])=>{ const col=document.createElement('div'); col.className='col'; col.innerHTML=`<h3>${label} <span>${b[key].length}</span></h3>`; col.ondragover=e=>e.preventDefault(); col.ondrop=e=>{ const id=e.dataTransfer.getData('text/plain'); moveCard(id,key); }; b[key].forEach(task=>{ const el=document.createElement('div'); el.className='task'; el.draggable=true; el.ondragstart=e=>e.dataTransfer.setData('text/plain',task.id); el.innerHTML=`<div class="meta">${task.time} • <span class="pill ${task.p}">${task.p}</span> ${task.paid?'':'• NÃO-PAGO'}</div><div class="title">${task.t}</div><div class="meta">${task.notes||''}</div><div class="meta">Espera: ${task.wait||0} min</div><div class="row"><button class="ghost" onclick="openModal('${task.id}')">Editar</button><button class="ghost" onclick="addWait('${task.id}',15)">+15min espera</button><button class="ghost" onclick="addWait('${task.id}',30)">+30min espera</button><button class="red" onclick="deleteTask('${task.id}')">Excluir</button></div>`; col.appendChild(el); }); boardEl.appendChild(col); }); const donePaid=b.done.filter(x=>x.paid).length; const hPagas=donePaid*55/60; const waitMin=[...b.todo,...b.doing,...b.pause,...b.done].reduce((s,x)=>s+(+x.wait||0),0); const hEspera=waitMin/60; const gHoje=hPagas*state.rate; document.getElementById('hPagas').textContent=hPagas.toFixed(1)+'h'; document.getElementById('hEspera').textContent=hEspera.toFixed(1)+'h'; document.getElementById('gHoje').textContent='$'+gHoje.toFixed(0); document.getElementById('gHojeBRL').textContent='R$ '+(gHoje*state.fx).toFixed(0); document.getElementById('gSemana').textContent='$'+(gHoje*6).toFixed(0); document.getElementById('gSemanaBRL').textContent='R$ '+(gHoje*6*state.fx).toFixed(0); document.getElementById('gMes').textContent='$'+(gHoje*26).toFixed(0); document.getElementById('gMesBRL').textContent='R$ '+(gHoje*26*state.fx).toFixed(0); const total=b.todo.length+b.doing.length+b.pause.length+b.done.length||1; const pctPago=Math.round(b.done.length/total*100); const pctEspera=Math.min(100,Math.round(waitMin/(11*60)*100)); document.getElementById('pctPago').textContent=pctPago+'%'; document.getElementById('pctEspera').textContent=pctEspera+'%'; document.getElementById('barPago').style.width=pctPago+'%'; document.getElementById('barEspera').style.width=pctEspera+'%'; document.getElementById('aviso').textContent=waitMin>=120?'⚠️ Fila esvaziou hoje — amanhã foca no Caça-projetos.':waitMin>=60?'Fila em espera moderada.':''; updateTimerLabel(); }
+function moveCard(id,toCol){ const b=board(); let found=null; ['todo','doing','pause','done'].forEach(k=>{ const idx=b[k].findIndex(x=>x.id===id); if(idx>-1) found=b[k].splice(idx,1)[0]; }); if(found){ b[toCol].push(found); save(); } }
 function findTask(id){ const b=board(); for(let k of ['todo','doing','pause','done']){ const t=b[k].find(x=>x.id===id); if(t) return t; } return null; }
-function openModal(id){ currentEdit=id; const t=findTask(id); if(!t) return; document.getElementById('modalTitle').textContent='Editar bloco'; document.getElementById('fTitle').value=t.t; document.getElementById('fPlat').value=t.p; document.getElementById('fTime').value=t.time; document.getElementById('fNotes').value=t.notes||''; document.getElementById('fWait').value=t.wait||0; document.getElementById('fPaid').value=t.paid? '1':'0'; document.getElementById('modal').classList.add('open'); }
+function openModal(id){ currentEdit=id; const t=findTask(id); if(!t) return; document.getElementById('fTitle').value=t.t; document.getElementById('fPlat').value=t.p; document.getElementById('fTime').value=t.time; document.getElementById('fNotes').value=t.notes||''; document.getElementById('fWait').value=t.wait||0; document.getElementById('fPaid').value=t.paid?'1':'0'; document.getElementById('modal').classList.add('open'); }
 function closeModal(){ document.getElementById('modal').classList.remove('open'); currentEdit=null; }
 function saveModal(){ const t=findTask(currentEdit); if(!t) return; t.t=document.getElementById('fTitle').value; t.p=document.getElementById('fPlat').value; t.time=document.getElementById('fTime').value; t.notes=document.getElementById('fNotes').value; t.wait=+document.getElementById('fWait').value||0; t.paid=document.getElementById('fPaid').value==='1'; save(); closeModal(); }
 function deleteModal(){ if(!currentEdit) return; deleteTask(currentEdit); closeModal(); }
 function deleteTask(id){ const b=board(); ['todo','doing','pause','done'].forEach(k=>{ b[k]=b[k].filter(x=>x.id!==id); }); save(); }
 function addWait(id,min){ const t=findTask(id); if(t){ t.wait=(+t.wait||0)+min; save(); } }
-function addTaskPrompt(){ const title=prompt('Título do novo bloco:'); if(!title) return; const b=board(); b.todo.push({id:'n'+Date.now(),t:title,p:'Outros',time:'--:--',notes:'',wait:0,paid:1}); save(); }
-function addWaitCard(){ const b=board(); b.todo.push({id:'w'+Date.now(),t:'Fila vazia — esperando tarefa',p:'Outros',time:'--:--',notes:'Só espera, não conta como pago.',wait:30,paid:0}); save(); }
-function resetDay(){ if(!confirm('Resetar o dia atual? Volta os 12 blocos originais.')) return; state.boards[state.day]={todo:DEFAULT_TASKS.map((x,i)=>({...x,id:state.day+'-'+Date.now()+'-'+i})),doing:[],pause:[],done:[]}; save(); }
+function addTaskPrompt(){ const title=prompt('Título do novo bloco:'); if(!title) return; board().todo.push({id:'n'+Date.now(),t:title,p:'Outros',time:'--:--',notes:'',wait:0,paid:1}); save(); }
+function addWaitCard(){ board().todo.push({id:'w'+Date.now(),t:'Fila vazia — esperando tarefa',p:'Outros',time:'--:--',notes:'Só espera.',wait:30,paid:0}); save(); }
+function resetDay(){ if(!confirm('Resetar o dia atual?')) return; state.boards[state.day]={todo:DEFAULT_TASKS.map((x,i)=>({...x,id:state.day+'-'+Date.now()+'-'+i})),doing:[],pause:[],done:[]}; save(); }
 function clearDone(){ board().done=[]; save(); }
 function updateTimerLabel(){ const m=Math.floor(timerSec/60), s=timerSec%60; document.getElementById('timer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
 function startTimer(min,label){ stopTimer(); timerSec=min*60; document.getElementById('timerLabel').textContent='Timer — '+min+' min '+label; updateTimerLabel(); timerInt=setInterval(()=>{ timerSec--; updateTimerLabel(); if(timerSec<=0){ stopTimer(); alert('Tempo! '+label+' terminou.'); } },1000); }
@@ -199,7 +106,7 @@ function stopTimer(){ if(timerInt) clearInterval(timerInt); timerInt=null; }
 function resetTimer(){ stopTimer(); timerSec=55*60; document.getElementById('timerLabel').textContent='Timer — 55 min trabalho'; updateTimerLabel(); }
 document.getElementById('rate').addEventListener('change',e=>{ state.rate=+e.target.value||8; save(); });
 document.getElementById('fx').addEventListener('change',e=>{ state.fx=+e.target.value||5.93; save(); });
-render();
+render(); loadFromSupabase();
 </script>
 </body>
 </html>
